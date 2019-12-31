@@ -3,26 +3,26 @@ package com.luence.common;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.luence.common.entity.SystemParams;
 import com.luence.common.luence.LuenceInfo;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.SocketUtils;
 
 import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class CommonApplicationTests {
 
     @Test
-    void contextLoads() {
+    void indexCreate() {
         List<Field> list = Lists.newArrayList();
         Field filedName = new TextField("name", "这个是luence测试使用的", Field.Store.YES);
         Field filedPrice = new StringField("price", "125.25", Field.Store.YES);
@@ -40,6 +40,19 @@ class CommonApplicationTests {
         }
         JSONObject jsonObject = JSON.parseObject(json.toString());
         System.out.println("status = " + jsonObject.get("status") + " info = " + jsonObject.get("info"));
+    }
+
+    @Test
+    void indexSearch(){
+        try {
+            List<Map<String, Object>> list = LuenceInfo.class.newInstance().indexSearch("深圳市");
+            if(CollectionUtils.isEmpty(list)) System.out.println("未查询到数据");
+            for (Map<String, Object> map : list) {
+                System.out.println( "name = "+map.get("name") + " price = "+map.get("price") + " address = "+map.get("address") );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
