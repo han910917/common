@@ -9,12 +9,12 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.io.File;
+import javax.annotation.Resource;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -23,13 +23,14 @@ import java.util.List;
  * @Author hangaoming
  * @Time 2019/12/30 13:04
  **/
-@PropertySource(value = {"classpath:common.properties"}, encoding = "utf-8")
+@Component
 public class LuenceInfo {
+    @Resource
+    private Environment environment;
 
-    @Value("${system.path}")
-    private static String path;
+    private String path = environment.getProperty("system.path");
 
-    public static Object indexCreate(List<Field> list){
+    public Object indexCreate(List<Field> list){
         // 创建文档对象
         Document document = new Document();
 
@@ -38,7 +39,7 @@ public class LuenceInfo {
         // 添加字段信息
         if(CollectionUtils.isEmpty(list)){
             jsonObject.put("status", "500");
-            jsonObject.put("info", "域(Field不能为空");
+            jsonObject.put("info", "域(Field)不能为空");
             return jsonObject;
         }
         list.stream().forEach(field -> document.add(field));
