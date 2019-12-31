@@ -29,10 +29,10 @@ class CommonApplicationTests {
         Field filedAddress = new TextField("address", "广东省深圳市罗湖区仙湖植物园", Field.Store.YES);
         Field filedName1 = new TextField("name", "这个不是luence测试使用的", Field.Store.YES);
         Field filedPrice1 = new StringField("price", "125.25", Field.Store.YES);
-        Field filedAddress1 = new TextField("address", "深圳罗湖区仙湖植物园", Field.Store.YES);
+        Field filedAddress1 = new TextField("address", "东莞失市仙湖植物园", Field.Store.YES);
         Field filedName2 = new TextField("name", "这个也不是luence测试使用的", Field.Store.YES);
         Field filedPrice2 = new StringField("price", "125.25", Field.Store.YES);
-        Field filedAddress2 = new TextField("address", "深圳市罗湖区仙湖植物园", Field.Store.YES);
+        Field filedAddress2 = new TextField("address", "深圳仙湖植物园", Field.Store.YES);
         list.add(filedName);
         list.add(filedPrice);
         list.add(filedAddress);

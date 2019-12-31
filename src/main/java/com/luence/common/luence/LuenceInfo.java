@@ -70,8 +70,8 @@ public class LuenceInfo {
                 // 创建索引目录对象
                 Directory directory = FSDirectory.open(Paths.get(systemParams.getPath()));
 
-                // 创建分词器
-                Analyzer analyzer = new StandardAnalyzer();
+                // 创建IK分词器
+                Analyzer analyzer = new IKAnalyzer();
 
                 // 创建配置对象
                 IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
@@ -116,7 +116,7 @@ public class LuenceInfo {
         Query query = queryParser.parse(key);
 
         // 搜索数据
-        TopDocs topDocs = indexSearcher.search(query, 10);
+        TopDocs topDocs = indexSearcher.search(query, 1);
         // 获取得分文档对象
         ScoreDoc[] scoreDocs = topDocs.scoreDocs;
         Arrays.stream(scoreDocs).forEach(scoreDoc -> {
