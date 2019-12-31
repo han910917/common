@@ -15,6 +15,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -44,13 +45,16 @@ public class LuenceInfo {
 
         try {
             // 创建索引目录对象
-            Directory directory = FSDirectory.open(new File(path));
+            Directory directory = FSDirectory.open(Paths.get(path));
 
             // 创建分词器
             Analyzer analyzer = new StandardAnalyzer();
 
             // 创建配置对象
-            IndexWriterConfig indexWriterConfig = new IndexWriterConfig(Version.LATEST, analyzer);
+            IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+
+            //设置打开索引库读写的方式：CREATE->覆盖原来索引，APPEND->追加到原来的索引。
+            indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
             // 创建索引的写出工具类
             IndexWriter indexWriter = new IndexWriter(directory, indexWriterConfig);
