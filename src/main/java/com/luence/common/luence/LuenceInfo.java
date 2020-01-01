@@ -49,10 +49,7 @@ public class LuenceInfo {
      * @param list
      * @return java.lang.Object
      */
-    public Object indexCreate(List<Field> list){
-        // 创建文档对象
-        Document document = new Document();
-
+    public Object indexCreate(List<Document> list){
         JSONObject jsonObject = new JSONObject();
 
         // 添加字段信息
@@ -61,7 +58,6 @@ public class LuenceInfo {
             jsonObject.put("info", "域(Field)不能为空");
             return jsonObject;
         }
-        list.stream().forEach(field -> document.add(field));
 
         try {
             // 删除旧索引信息，或创建索引地址
@@ -82,11 +78,15 @@ public class LuenceInfo {
                 // 创建索引的写出工具类
                 IndexWriter indexWriter = new IndexWriter(directory, indexWriterConfig);
 
-                // 添加文档
-                indexWriter.addDocument(document);
+                list.stream().forEach(doc -> {
+                    try {
+                        // 添加文档
+                        indexWriter.addDocument(doc);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
 
-                // 提交
-                indexWriter.commit();
                 // 关闭
                 indexWriter.close();
 
@@ -116,7 +116,7 @@ public class LuenceInfo {
         Query query = queryParser.parse(key);
 
         // 搜索数据
-        TopDocs topDocs = indexSearcher.search(query, 1);
+        TopDocs topDocs = indexSearcher.search(query, 10);
         // 获取得分文档对象
         ScoreDoc[] scoreDocs = topDocs.scoreDocs;
         Arrays.stream(scoreDocs).forEach(scoreDoc -> {
