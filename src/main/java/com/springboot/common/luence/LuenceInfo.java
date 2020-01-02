@@ -1,14 +1,12 @@
-package com.luence.common.luence;
+package com.springboot.common.luence;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.luence.common.entity.SystemParams;
-import com.luence.common.utils.FileUtil;
+import com.springboot.common.entity.SystemParams;
+import com.springboot.common.utils.FileUtil;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;

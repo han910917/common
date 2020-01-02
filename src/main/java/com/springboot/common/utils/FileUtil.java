@@ -1,4 +1,4 @@
-package com.luence.common.utils;
+package com.springboot.common.utils;
 
 import org.springframework.util.StringUtils;
 

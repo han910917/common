@@ -1,4 +1,4 @@
-package com.luence.common;
+package com.springboot.common;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

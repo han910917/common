@@ -1,4 +1,4 @@
-package com.luence.common.entity;
+package com.springboot.common.entity;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

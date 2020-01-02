@@ -1,9 +1,9 @@
-package com.luence.common;
+package com.springboot.common;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.luence.common.luence.LuenceInfo;
+import com.springboot.common.luence.LuenceInfo;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.SocketUtils;
 
 import java.util.List;
 import java.util.Map;
