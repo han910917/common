@@ -35,8 +35,8 @@ public class FileUtil {
             }
         }
 
-        File[] files = file.listFiles();
-        Arrays.stream(files).forEach( f -> f.deleteOnExit());
+//        File[] files = file.listFiles();
+//        Arrays.stream(files).forEach( f -> f.deleteOnExit());
         return true;
     }
 }

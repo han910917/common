@@ -3,7 +3,6 @@ package com.springboot.common.luence;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.springboot.common.entity.SystemParams;
 import com.springboot.common.utils.FileUtil;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -18,8 +17,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
@@ -34,11 +31,7 @@ import java.util.Map;
  * @Author hangaoming
  * @Time 2019/12/30 13:04
  **/
-@Component
 public class LuenceInfo {
-
-    @Autowired
-    private SystemParams systemParams;
 
     /**
      * 创建索引
@@ -47,7 +40,7 @@ public class LuenceInfo {
      * @param list
      * @return java.lang.Object
      */
-    public Object indexCreate(List<Document> list){
+    public static Object indexCreate(List<Document> list, String path){
         JSONObject jsonObject = new JSONObject();
 
         // 添加字段信息
@@ -59,10 +52,10 @@ public class LuenceInfo {
 
         try {
             // 删除旧索引信息，或创建索引地址
-            boolean isTure = FileUtil.deleteFile(systemParams.getPath());
+            boolean isTure = FileUtil.deleteFile(path);
             if (isTure) {
                 // 创建索引目录对象
-                Directory directory = FSDirectory.open(Paths.get(systemParams.getPath()));
+                Directory directory = FSDirectory.open(Paths.get(path));
 
                 // 创建IK分词器
                 Analyzer analyzer = new IKAnalyzer();
@@ -100,10 +93,10 @@ public class LuenceInfo {
         return jsonObject;
     }
 
-    public List<Map<String, Object>> indexSearch(String key) throws Exception {
+    public List<Map<String, Object>> indexSearch(String key, String path) throws Exception {
         List<Map<String, Object>> list = Lists.newArrayList();
         // 索引目录对象
-        Directory directory = FSDirectory.open(Paths.get(systemParams.getPath()));
+        Directory directory = FSDirectory.open(Paths.get(path));
         // 索引读取工具
         IndexReader indexReader = DirectoryReader.open(directory);
         // 索引搜索工具
