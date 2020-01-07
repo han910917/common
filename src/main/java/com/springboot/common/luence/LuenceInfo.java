@@ -6,25 +6,25 @@ import com.google.common.collect.Maps;
 import com.springboot.common.utils.FileUtil;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.springframework.util.CollectionUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
+import sun.misc.FDBigInteger;
 
+import javax.xml.soap.Text;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @Description
@@ -93,7 +93,15 @@ public class LuenceInfo {
         return jsonObject;
     }
 
-    public List<Map<String, Object>> indexSearch(String key, String path) throws Exception {
+    /**
+     * 普通查询(待优化)
+     * @author HanGaoMing
+     * @Time 2020/1/7 18:03
+     * @param key
+     * @param path
+     * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+     */
+    public static List<Map<String, Object>> indexSearch(String key, String path) throws Exception {
         List<Map<String, Object>> list = Lists.newArrayList();
         // 索引目录对象
         Directory directory = FSDirectory.open(Paths.get(path));
@@ -116,7 +124,168 @@ public class LuenceInfo {
             try {
                 Document document = indexReader.document(docId);
                 map.put("name", document.get("name"));
-                map.put("price", document.get("price"));
+                map.put("id", document.get("id"));
+                map.put("address", document.get("address"));
+                list.add(map);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        return list;
+    }
+
+    /**
+     * Term(词条)查询(待优化)
+     * 词条是做小收缩单元，是不可分割的。所以没有使用分词器进行分词在查询。
+     * @author HanGaoMing
+     * @Time 2020/1/7 18:06
+     * @param 
+     * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+     */
+    public static List<Map<String, Object>> indexTeamSearch(String key, String path) throws Exception {
+        // 1、创建索引目录对象
+        Directory directory = FSDirectory.open(Paths.get(path));
+        // 2、索引读取工具
+        IndexReader indexReader = DirectoryReader.open(directory);
+        // 3、索引搜索工具
+        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+        // 4、创建查询对象
+        Query query = new TermQuery(new Term("address", key));
+        // 5、搜索数据
+        TopDocs topDocs = indexSearcher.search(query, 10);
+        // 6、获取总条数
+        long num = topDocs.totalHits;
+        // 7、获取得分文档的对象
+        ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+        // 8、取出文档编号
+        List<Map<String, Object>> list = Lists.newArrayList();
+        Arrays.stream(scoreDocs).forEach(scoreDoc -> {
+            Map<String, Object> map = Maps.newHashMap();
+            int docId = scoreDoc.doc;
+
+            try {
+                // 9、根据编号去找文档
+                Document document = indexReader.document(docId);
+                map.put("name", document.get("name"));
+                map.put("id", document.get("id"));
+                map.put("address", document.get("address"));
+                list.add(map);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        return list;
+    }
+
+    /**
+     * 通配符(WildcardQuery)查询
+     * @author HanGaoMing
+     * @Time 2020/1/7 18:47
+     * @param
+     * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+     */
+    public static List<Map<String, Object>> indexWildcardQuery(String key, String path) throws Exception {
+        // 1、创建索引目录对象
+        Directory directory = FSDirectory.open(Paths.get(path));
+        // 2、索引读取工具
+        IndexReader indexReader = DirectoryReader.open(directory);
+        // 3、索引搜索工具
+        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+        // 4、创建查询对象
+        Query query = new WildcardQuery(new Term("address", key));
+        // 5、搜索数据
+        TopDocs topDocs = indexSearcher.search(query, 10);
+        // 6、获取得分文档的对象
+        ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+        List<Map<String, Object>> list = Lists.newArrayList();
+         Arrays.stream(scoreDocs).forEach(scoreDoc -> {
+             Map<String, Object> map = Maps.newHashMap();
+            // 7、取出文档编号
+             int docId = scoreDoc.doc;
+            // 8、根据编号去找文档
+             try {
+                 Document document = indexReader.document(docId);
+                 map.put("name", document.get("name"));
+                 map.put("id", document.get("id"));
+                 map.put("address", document.get("address"));
+                 list.add(map);
+             } catch (IOException e) {
+                 e.printStackTrace();
+             }
+         });
+
+        return list;
+    }
+
+    /**
+     * 模糊查询(FuzzyQuery)
+     * @author HanGaoMing
+     * @Time 2020/1/7 19:19
+     * @param key
+     * @param path
+     * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+     */
+    public static List<Map<String, Object>> indexFuzzyQuery(String key, String path) throws Exception{
+        Directory directory = FSDirectory.open(Paths.get(path));
+
+        IndexReader indexReader = DirectoryReader.open(directory);
+
+        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+
+        Query query = new FuzzyQuery(new Term("address", key), 1);
+
+        TopDocs topDocs = indexSearcher.search(query, 10);
+
+        ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+
+        List<Map<String, Object>> list = Lists.newArrayList();
+        Arrays.stream(scoreDocs).forEach(scoreDoc -> {
+            Map<String, Object> map = Maps.newHashMap();
+            int docId = scoreDoc.doc;
+            try {
+                Document document = indexReader.document(docId);
+                map.put("name", document.get("name"));
+                map.put("id", document.get("id"));
+                map.put("address", document.get("address"));
+                list.add(map);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        return list;
+    }
+
+    /**
+     * 数值范围查询（NumericRangeQuery）
+     * newStringRange(String field, String lowerTerm, String upperTerm, boolean includeLower, boolean includeUpper)
+     * includeLower和includeUpper表示是否包含，例：includeLower为true，includeUpper为false时，查询范围为【lowerTerm，upperTerm）
+     * @author HanGaoMing
+     * @Time 2020/1/7 19:45
+     * @param start
+     * @param end
+     * @param path
+     * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+     */
+    public static List<Map<String, Object>> indexNumericRangeQuery(Integer start, Integer end, String path) throws Exception {
+        Directory directory = FSDirectory.open(Paths.get(path));
+
+        IndexReader indexReader = DirectoryReader.open(directory);
+
+        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+
+        Query query = TermRangeQuery.newStringRange("id", start.toString(), end.toString(), true, false);
+
+        TopDocs topDocs = indexSearcher.search(query, 10);
+        ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+
+        List<Map<String, Object>> list = Lists.newArrayList();
+        Arrays.stream(scoreDocs).forEach(scoreDoc -> {
+            Map<String, Object> map = Maps.newHashMap();
+            int docId = scoreDoc.doc;
+            try {
+                Document document = indexReader.document(docId);
+                map.put("name", document.get("name"));
+                map.put("id", document.get("id"));
                 map.put("address", document.get("address"));
                 list.add(map);
             } catch (IOException e) {
