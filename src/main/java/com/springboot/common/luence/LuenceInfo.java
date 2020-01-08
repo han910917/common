@@ -6,6 +6,9 @@ import com.google.common.collect.Maps;
 import com.springboot.common.utils.FileUtil;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
@@ -15,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 import java.io.IOException;
+import java.net.StandardSocketOptions;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -309,8 +313,8 @@ public class LuenceInfo {
         Query query1= TermRangeQuery.newStringRange("id", start.toString(), end.toString(), true, false);
 
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
-        builder.add(query, BooleanClause.Occur.MUST);
-        builder.add(query1, BooleanClause.Occur.MUST);
+        builder.add(query, BooleanClause.Occur.SHOULD);
+        builder.add(query1, BooleanClause.Occur.SHOULD);
 
         BooleanQuery booleanQuery = builder.build();
         TopDocs topDocs = indexSearcher.search(booleanQuery, 10);
@@ -333,5 +337,63 @@ public class LuenceInfo {
         return list;
     }
 
+    /**
+     * 修改指定id的索引
+     * @author HanGaoMing
+     * @Time 2020/1/8 17:50
+     * @param text
+     * @param id
+     * @return void
+     */
+    public static void updateIndex(String text, String id, String path) throws Exception{
+        Directory directory = FSDirectory.open(Paths.get(path));
+        IndexWriterConfig indexWriterConfig = new IndexWriterConfig(new IKAnalyzer());
+        IndexWriter indexWriter = new IndexWriter(directory, indexWriterConfig);
+        Document document = new Document();
+        document.add(new StringField("id", id, Field.Store.YES));
+        document.add(new StringField("name", "郑州大学", Field.Store.YES));
+        document.add(new TextField("address", text, Field.Store.YES));
+
+        indexWriter.updateDocument(new Term("id", id), document);
+        indexWriter.commit();
+        indexWriter.close();
+    }
+
+    /**
+     * 删除索引基于词条
+     * @author HanGaoMing
+     * @Time 2020/1/8 18:10
+     * @param id
+     * @param path
+     * @return void
+     */
+    public static void deleteTermIndex(String id, String path) throws Exception{
+        Directory directory = FSDirectory.open(Paths.get(path));
+        IndexWriterConfig config = new IndexWriterConfig();
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+
+        indexWriter.deleteDocuments(new Term("id", id));
+        indexWriter.commit();
+        indexWriter.close();
+    }
+
+    /**
+     * 删除索引基于Query对象
+     * @author HanGaoMing
+     * @Time 2020/1/8 18:10
+     * @param id
+     * @param path
+     * @return void
+     */
+    public static void deleteQueryIndex(String id, String path) throws Exception{
+        Directory directory = FSDirectory.open(Paths.get(path));
+        IndexWriterConfig config = new IndexWriterConfig();
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+
+        Query query = TermRangeQuery.newStringRange("id", id, id, true, true);
+        indexWriter.deleteDocuments(query);
+        indexWriter.commit();
+        indexWriter.close();
+    }
 
 }
