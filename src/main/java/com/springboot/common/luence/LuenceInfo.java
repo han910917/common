@@ -6,9 +6,6 @@ import com.google.common.collect.Maps;
 import com.springboot.common.utils.FileUtil;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
@@ -16,15 +13,12 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.springframework.util.CollectionUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
-import sun.misc.FDBigInteger;
 
-import javax.xml.soap.Text;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @Description
@@ -294,4 +288,50 @@ public class LuenceInfo {
         });
         return list;
     }
+
+    /**
+     * 组合查询
+     * @author HanGaoMing
+     * @Time 2020/1/8 10:53
+     * @param key
+     * @param start
+     * @param end
+     * @param path
+     * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
+     */
+    public static List<Map<String, Object>> indexBooleanQuery(String key, Integer start, Integer end, String path) throws Exception{
+        Directory directory = FSDirectory.open(Paths.get(path));
+        IndexReader indexReader = DirectoryReader.open(directory);
+
+        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+
+        Query query = new TermQuery(new Term("address", key));
+        Query query1= TermRangeQuery.newStringRange("id", start.toString(), end.toString(), true, false);
+
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        builder.add(query, BooleanClause.Occur.MUST);
+        builder.add(query1, BooleanClause.Occur.MUST);
+
+        BooleanQuery booleanQuery = builder.build();
+        TopDocs topDocs = indexSearcher.search(booleanQuery, 10);
+        ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+
+        List<Map<String, Object>> list = Lists.newArrayList();
+        Arrays.stream(scoreDocs).forEach(scoreDoc -> {
+            Map<String, Object> map = Maps.newHashMap();
+            int docId = scoreDoc.doc;
+            try {
+                Document document = indexReader.document(docId);
+                map.put("name", document.get("name"));
+                map.put("id", document.get("id"));
+                map.put("address", document.get("address"));
+                list.add(map);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        return list;
+    }
+
+
 }
