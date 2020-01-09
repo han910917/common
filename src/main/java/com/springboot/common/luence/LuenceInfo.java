@@ -18,7 +18,7 @@ import org.springframework.util.CollectionUtils;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 import java.io.IOException;
-import java.net.StandardSocketOptions;
+import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -95,12 +95,24 @@ public class LuenceInfo {
      * 普通查询(待优化)
      * @author HanGaoMing
      * @Time 2020/1/7 18:03
-     * @param key
-     * @param path
      * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
      */
-    public static List<Map<String, Object>> indexSearch(String key, String path) throws Exception {
+    public static <T> List<Map<String, Object>> indexSearch(T params, T result) throws Exception {
         List<Map<String, Object>> list = Lists.newArrayList();
+        String path = null;
+        String key = null;
+        try {
+            java.lang.reflect.Field[] filed = params.getClass().getDeclaredFields();
+            String name = filed[0].getName();
+            Method m = params.getClass().getMethod("get" + name.replaceFirst(name.substring(0, 1), name.substring(0, 1).toUpperCase()));
+            path = String.valueOf(m.invoke(params));
+            for (int j = 0; j < filed.length; j++) {
+                System.out.println(filed[j].getType().getName() + "  " + path);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 索引目录对象
         Directory directory = FSDirectory.open(Paths.get(path));
         // 索引读取工具
