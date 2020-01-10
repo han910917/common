@@ -97,15 +97,13 @@ public class LuenceInfo {
      * @Time 2020/1/7 18:03
      * @return java.util.List<java.util.Map<java.lang.String,java.lang.Object>>
      */
-    public static <T> List<Map<String, Object>> indexSearch(T params, T result) throws Exception {
+    public static <T> List<Map<String, Object>> indexSearch(String path, T params, T result) throws Exception {
         List<Map<String, Object>> list = Lists.newArrayList();
-        String path = null;
         String key = null;
         try {
             java.lang.reflect.Field[] filed = params.getClass().getDeclaredFields();
             String name = filed[0].getName();
             Method m = params.getClass().getMethod("get" + name.replaceFirst(name.substring(0, 1), name.substring(0, 1).toUpperCase()));
-            path = String.valueOf(m.invoke(params));
             for (int j = 0; j < filed.length; j++) {
                 System.out.println(filed[j].getType().getName() + "  " + path);
             }
