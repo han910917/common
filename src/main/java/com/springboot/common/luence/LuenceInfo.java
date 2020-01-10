@@ -100,16 +100,6 @@ public class LuenceInfo {
      */
     public static <T> List<Map<String, Object>> indexSearch(String path, T params, T result) throws Exception {
         List<Map<String, Object>> list = Lists.newArrayList();
-        Map<String, Object> paramsMap = Maps.newHashMap();
-        String key = null;
-        try {
-            java.lang.reflect.Field[] filed = params.getClass().getDeclaredFields();
-            String name = filed[0].getName();
-            Method m = params.getClass().getMethod("get" + name.replaceFirst(name.substring(0, 1), name.substring(0, 1).toUpperCase()));
-            paramsMap = (Map<String, Object>) m.invoke(params);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         List<Query> lists = QueryUtil.getQuery(result);
         List<String> paramsList = QueryUtil.getCanShuName(params);
