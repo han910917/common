@@ -112,6 +112,7 @@ public class LuenceInfo {
         }
 
         List<Query> lists = QueryUtil.getQuery(result);
+        List<String> paramsList = QueryUtil.getCanShuName(params);
 
         // 索引目录对象
         Directory directory = FSDirectory.open(Paths.get(path));
@@ -121,11 +122,15 @@ public class LuenceInfo {
         IndexSearcher indexSearcher = new IndexSearcher(indexReader);
 
         // 创建查询解析器
-        QueryParser queryParser = new QueryParser("address", new IKAnalyzer());
-        Query query = queryParser.parse(key);
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        lists.forEach( query -> {
+            builder.add(query, BooleanClause.Occur.MUST);
+        });
+
+        BooleanQuery booleanQuery = builder.build();
 
         // 搜索数据
-        TopDocs topDocs = indexSearcher.search(query, 10);
+        TopDocs topDocs = indexSearcher.search(booleanQuery, 10);
         // 获取得分文档对象
         ScoreDoc[] scoreDocs = topDocs.scoreDocs;
         Arrays.stream(scoreDocs).forEach(scoreDoc -> {
@@ -133,9 +138,9 @@ public class LuenceInfo {
             int docId = scoreDoc.doc;
             try {
                 Document document = indexReader.document(docId);
-                map.put("name", document.get("name"));
-                map.put("id", document.get("id"));
-                map.put("address", document.get("address"));
+                paramsList.forEach( str -> {
+                    map.put(str, document.get(str));
+                });
                 list.add(map);
             } catch (IOException e) {
                 e.printStackTrace();

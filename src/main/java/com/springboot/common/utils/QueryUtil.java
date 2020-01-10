@@ -18,6 +18,11 @@ import java.util.List;
  **/
 public class QueryUtil {
 
+    /**
+     * 根据参数获取相应的Query
+     * @Time 2020/1/10 16:03
+     * @return java.util.List<org.apache.lucene.search.Query>
+     */
     public static <T> List<Query> getQuery(T resultParams) throws Exception {
         List<Query> list = Lists.newArrayList();
         java.lang.reflect.Field[] filed = resultParams.getClass().getDeclaredFields();
@@ -42,12 +47,17 @@ public class QueryUtil {
         return list;
     }
 
-    public static void main(String[] args) throws Exception {
-        ShenQingResultEntity shenQingResultEntity = new ShenQingResultEntity();
-        shenQingResultEntity.setId("100,101");
-        shenQingResultEntity.setName("韩高明");
-        shenQingResultEntity.setAddress("河南省周口市");
-
-        getQuery(shenQingResultEntity);
+    /**
+     * 获取返回的参数
+     * @Time 2020/1/10 16:03
+     * @return java.util.List<java.lang.String>
+     */
+    public static <T> List<String> getCanShuName(T params){
+        List<String> list = Lists.newArrayList();
+        java.lang.reflect.Field[] filed = params.getClass().getDeclaredFields();
+        for (Field field : filed) {
+            list.add(field.getName());
+        }
+        return list;
     }
 }
