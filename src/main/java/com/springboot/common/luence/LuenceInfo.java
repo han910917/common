@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.springboot.common.utils.FileUtil;
+import com.springboot.common.utils.QueryUtil;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -99,17 +100,18 @@ public class LuenceInfo {
      */
     public static <T> List<Map<String, Object>> indexSearch(String path, T params, T result) throws Exception {
         List<Map<String, Object>> list = Lists.newArrayList();
+        Map<String, Object> paramsMap = Maps.newHashMap();
         String key = null;
         try {
             java.lang.reflect.Field[] filed = params.getClass().getDeclaredFields();
             String name = filed[0].getName();
             Method m = params.getClass().getMethod("get" + name.replaceFirst(name.substring(0, 1), name.substring(0, 1).toUpperCase()));
-            for (int j = 0; j < filed.length; j++) {
-                System.out.println(filed[j].getType().getName() + "  " + path);
-            }
+            paramsMap = (Map<String, Object>) m.invoke(params);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        List<Query> lists = QueryUtil.getQuery(result);
 
         // 索引目录对象
         Directory directory = FSDirectory.open(Paths.get(path));
