@@ -27,6 +27,9 @@ public class QueryUtil {
         List<Query> list = Lists.newArrayList();
         java.lang.reflect.Field[] filed = resultParams.getClass().getDeclaredFields();
         for (Field field : filed) {
+            field.setAccessible(true);
+            if( null == field.get(resultParams) || "".equals(field.get(resultParams)) ) continue;
+
             String fieldName = field.getName();
             String name = "get" + fieldName.replaceFirst(fieldName.substring(0,1), fieldName.substring(0, 1).toUpperCase());
 
