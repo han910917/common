@@ -6,10 +6,7 @@ import com.google.common.collect.Maps;
 import com.springboot.common.utils.FileUtil;
 import com.springboot.common.utils.QueryUtil;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
@@ -155,7 +152,7 @@ public class LuenceInfo {
         // 3、索引搜索工具
         IndexSearcher indexSearcher = new IndexSearcher(indexReader);
         // 4、创建查询对象
-        Query query = new TermQuery(new Term("address", key));
+        Query query = new TermQuery(new Term("title", key));
         // 5、搜索数据
         TopDocs topDocs = indexSearcher.search(query, 10);
         // 6、获取总条数
@@ -171,9 +168,9 @@ public class LuenceInfo {
             try {
                 // 9、根据编号去找文档
                 Document document = indexReader.document(docId);
-                map.put("name", document.get("name"));
+                map.put("title", document.get("title"));
                 map.put("id", document.get("id"));
-                map.put("address", document.get("address"));
+                map.put("applyDate", document.get("applyDate"));
                 list.add(map);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -403,4 +400,19 @@ public class LuenceInfo {
         indexWriter.close();
     }
 
+    /**
+     * 增量添加索引
+     * @author HanGaoMing
+     * @Time 2020/1/14 12:50
+     */
+    public static void addIndex(List<Document> list, String path) throws Exception{
+        Directory directory = FSDirectory.open(Paths.get(path));
+        IndexWriterConfig config = new IndexWriterConfig(new IKAnalyzer());
+        config.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
+
+        IndexWriter indexWriter = new IndexWriter(directory, config);
+        indexWriter.addDocuments(list);
+        indexWriter.commit();
+        indexWriter.close();
+    }
 }
